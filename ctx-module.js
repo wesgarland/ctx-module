@@ -64,6 +64,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
       },
     };
   }
+  this.parent = parent;
 
   if (cnId) /* false => completely virtual exports-only module, via Module.from */
   {
@@ -89,7 +90,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
       return paths;
     
     /* Create a new modules.path for node_modules resolution */
-    for (let path = fromPath; path && path[0] === '/'; path = dirname(path))
+    for (let path = fromPath; path && (path[0] === '/' || path.match(/^[a-zA-Z]:[\/\\]/)); path = dirname(path))
     {
       if (path.endsWith('/node_modules'))
         continue;
@@ -104,6 +105,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
   /** Implementation of require() for this module */
   this.require = function ctxRequire(moduleIdentifier)
   {
+    moduleIdentifier = moduleIdentifier.replace(/\\/g, '/');
     debug('ctx-module:require')('require ' + moduleIdentifier);
 
     try
@@ -181,7 +183,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
     if (pathname.startsWith('/'))
       newPath[0] = '';
     
-    components = pathname.split('/');
+    components = pathname.replace(/\\/g, '/').split('/');
     for (let i=0; i < components.length; i++)
     {
       let component = components[i];      
@@ -215,7 +217,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
       return moduleIdentifier;
     }
     
-    if (moduleIdentifier[0] === '/' || moduleIdentifier.match(/^[A-Z]:[\/\\]/)) // absolute paths
+    if (moduleIdentifier[0] === '/' || moduleIdentifier.match(/^[a-zA-Z]:[\/\\]/)) // absolute paths
       moduleFilename = locateModuleFile(relativeResolve(moduleIdentifier));
     else
     {
@@ -373,6 +375,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
   /* Create the exports for the module module; it is special because it needs access to our internals. */
   if (cnId === 'module')
   {
+    this.exports.builtinModules = [];
     this.exports._nodeModulePaths = makeNodeModulesPaths;
     
     /* Create a _cache property which looks like Node's, and intercept mutations
@@ -382,7 +385,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
       get (_moduleCache, moduleIdentifier) {
         const retval = (true
                         && typeof moduleCache.hasOwnProperty(moduleIdentifier)
-                        && moduleCache[moduleIdentifier] === 'object')
+                        && typeof moduleCache[moduleIdentifier] === 'object')
               ? moduleCache[moduleIdentifier]
               : undefined;
         return retval;
