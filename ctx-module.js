@@ -143,7 +143,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
    */
   function canonicalize(moduleIdentifier)
   {
-    if (moduleIdentifier.startsWith('./') || moduleIdentifier.startsWith('../') || moduleIdentifier === '.')
+    if (moduleIdentifier.startsWith('./') || moduleIdentifier.startsWith('../') || moduleIdentifier === '.' || moduleIdentifier === '..')
       moduleIdentifier = relativeResolve(that.path, moduleIdentifier);
     else
       moduleIdentifier = relativeResolve(moduleIdentifier);
