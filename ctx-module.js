@@ -549,7 +549,7 @@ function copyProps(dst, src)
   const pds = Object.getOwnPropertyDescriptors(src);
   for (const propds in pds)
   {
-    if (pds[propds].configurable)
+    if ( !dst[propds] || Object.getOwnPropertyDescriptor(dst, propds)?.configurable)
       Object.defineProperty(dst, propds, pds[propds]);
   }
   return dst;
