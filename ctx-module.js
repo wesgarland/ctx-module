@@ -296,7 +296,7 @@ function CtxModule(ctx, cnId, moduleCache, parent)
 
   function loadJSONModule(module, filename)
   {
-    copyProps(module.exports, JSON.parse(fs.readFileSync(filename, 'utf-8')));
+    module.exports = JSON.parse(fs.readFileSync(filename, 'utf-8'));
   }
 
   function loadModule(filename)
